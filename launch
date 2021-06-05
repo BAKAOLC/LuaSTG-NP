@@ -1,0 +1,16 @@
+for k, v in pairs(lstg) do
+    _G[k] = v
+end
+
+if #args >= 2 then
+    loadstring(args[2])()
+end
+
+SetTitle("LuaSTG-NP")
+SetSplash(false)
+SetWindowed(true)
+SetResolution(640, 480)
+SetFPS(60)
+SetVsync(false)
+SetSEVolume(1)
+SetBGMVolume(1)
