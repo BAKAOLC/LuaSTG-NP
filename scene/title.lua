@@ -12,6 +12,7 @@ function scene:frame()
     end
 end
 
+local View = require("View")
 function scene:render()
     View.SetCurrentViewType("ui")
     if self.flag == 1 then

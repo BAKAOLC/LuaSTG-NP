@@ -3,7 +3,7 @@
 ---所有基础的东西都会在这里定义
 ---=====================================
 
-table.insert(package.path, "core/?.lua")
+package.path = package.path .. ";core/?.lua"
 
 ---@class lstg @内建函数库
 lstg = lstg or {}

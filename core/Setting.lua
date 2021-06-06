@@ -442,3 +442,5 @@ local function readConfig()
     end
 end
 lib.Read = readConfig
+
+return lib

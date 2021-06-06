@@ -9,12 +9,10 @@ local SetImageScale = SetImageScale
 local World = require("World")
 local WorldOffset = require("WorldOffset")
 local Screen = require("Screen")
-local View3d = require("View3d")
 local Setting = require("Setting")
 
 local getCurrentWorld = World.GetCurrentWorld
 local getCurrentWorldOffset = WorldOffset.GetCurrentWorldOffset
-local getCurrentView3d = View3d.GetCurrentView3d
 local CurrentGraphicsSetting = Setting.Graphics
 
 ---@class lstg.View
@@ -52,7 +50,7 @@ lib.GetCurrentViewType = getCurrentViewType
 local function setCurrentViewType(name, force)
     if force or currentViewTypeName ~= name then
         currentViewTypeName = name
-        getCurrentViewType()(Screen, getCurrentWorld(), getCurrentWorldOffset(), getCurrentView3d())
+        getCurrentViewType()(Screen, getCurrentWorld(), getCurrentWorldOffset(), require("View3d").GetCurrentView3d())
     end
 end
 lib.SetCurrentViewType = setCurrentViewType
@@ -161,7 +159,5 @@ addViewType("ui", function(screen, world, offset, view3d)
     local height = screen.GetHeight()
     setRenderRect(0, width, 0, height, 0, width, 0, height)
 end)
-
-setCurrentViewType("ui")
 
 return lib

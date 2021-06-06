@@ -5,8 +5,6 @@ local SetViewport = SetViewport
 local SetFog = SetFog
 local SetImageScale = SetImageScale
 
-local View = require("View")
-
 ---@class lstg.View3d
 local lib = {}
 lstg.View3d = lib
@@ -113,8 +111,7 @@ function view:SetFog(from, to, color)
     self.fog[2] = to
     self.fog[3] = color
 end
-
-View.AddViewType("3d", function(screen, world, offset, view3d)
+require("View").AddViewType("3d", function(screen, world, offset, view3d)
     local scale = screen.GetScale()
     local dx = screen.GetDx()
     local dy = screen.GetDy()
