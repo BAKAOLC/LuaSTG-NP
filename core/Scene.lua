@@ -15,7 +15,6 @@ local Input = require("Input")
 local ResetWorld = World.ResetWorld
 local ResetWorldOffset = WorldOffset.ResetWorldOffset
 local ResetView3d = View3d.ResetView3d
-local ResetTempVar = ResetTempVar
 local UpdateGameInput = Input.UpdateGameInput
 local UpdateSystemInput = Input.UpdateSystemInput
 
@@ -75,7 +74,6 @@ function lib:afterFrame()
             end
             ResetPool()
         end
-        ResetTempVar()
         ResetWorld()
         ResetWorldOffset()
         ResetView3d()

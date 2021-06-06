@@ -6,6 +6,8 @@ local pairs = pairs
 local insert = table.insert
 local concat = table.concat
 
+local i18n = require("util.Internationalization")
+
 ---@class lstg.Serialize 序列化库
 local lib = {}
 Serialize = lib
@@ -119,7 +121,7 @@ do
         elseif t == "nil" then
             return "nil"
         else
-            error(("can not serialize a %s type."):format(t))
+            error(i18n:GetLanguageString("Core.Serialize.Error.UnableSerializeType"):format(t))
         end
     end
     lua.Encode = encode
@@ -134,9 +136,9 @@ do
         elseif t == "number" or t == "string" or t == "boolean" then
             lua = tostring(lua)
         else
-            error(("can not unserialize a %s type."):format(t))
+            error(i18n:GetLanguageString("Core.Serialize.Error.UnableSerializeType"):format(t))
         end
-        lua = ("return %s"):format(lua)
+        lua = "return " .. lua
         local func = loadstring(lua)
         if func == nil then
             return nil
@@ -146,3 +148,5 @@ do
     lua.Decode = decode
 end
 --endregion
+
+return lib

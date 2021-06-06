@@ -8,10 +8,13 @@ local tostring = tostring
 local insert = table.insert
 local remove = table.remove
 local traceback = debug.traceback
+
 local max = max
 local int = int
 local sign = sign
 local CombinNum = CombinNum
+
+local i18n = require("util.Internationalization")
 
 ---@class lstg.Task
 local lib = {}
@@ -46,10 +49,10 @@ function lib:Do()
                 insert(stackCoroutine, co)
                 local success, errmsg = resume(co)
                 if not (success) then
-                    error(tostring(errmsg or "Unknown exception")
-                            .. "\n========== coroutine traceback ==========\n"
+                    error(tostring(errmsg or i18n:GetLanguageString("Core.Task.Error.UnknownException"))
+                            .. "\n========== " .. i18n:GetLanguageString("Core.Task.CoroutineTraceback") .. " ==========\n"
                             .. traceback(co)
-                            .. "\n========== C traceback ==========")
+                            .. "\n========== " .. i18n:GetLanguageString("Core.Task.CTraceback") .. " ==========")
                 end
                 remove(stackCoroutine)
                 remove(stackTarget)

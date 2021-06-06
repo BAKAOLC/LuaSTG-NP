@@ -1,3 +1,6 @@
+local ipairs = ipairs
+local pairs = pairs
+
 local GetKeyState = GetKeyState
 
 local Setting = require("Setting")

@@ -10,10 +10,13 @@ local World = require("World")
 local WorldOffset = require("WorldOffset")
 local Screen = require("Screen")
 local Setting = require("Setting")
+local View3d = require("View3d")
+local i18n = require("util.Internationalization")
 
 local getCurrentWorld = World.GetCurrentWorld
 local getCurrentWorldOffset = WorldOffset.GetCurrentWorldOffset
 local CurrentGraphicsSetting = Setting.Graphics
+local getCurrentView3d = View3d.GetCurrentView3d
 
 ---@class lstg.View
 local lib = {}
@@ -38,7 +41,7 @@ local function getCurrentViewType()
     if viewType[currentViewTypeName] then
         return viewType[currentViewTypeName]
     else
-        error("Invalid arguement.")
+        error(i18n:GetLanguageString("Core.View.Error.InvalidArgument"))
     end
 end
 lib.GetCurrentViewType = getCurrentViewType
@@ -50,7 +53,7 @@ lib.GetCurrentViewType = getCurrentViewType
 local function setCurrentViewType(name, force)
     if force or currentViewTypeName ~= name then
         currentViewTypeName = name
-        getCurrentViewType()(Screen, getCurrentWorld(), getCurrentWorldOffset(), require("View3d").GetCurrentView3d())
+        getCurrentViewType()(Screen, getCurrentWorld(), getCurrentWorldOffset(), getCurrentView3d())
     end
 end
 lib.SetCurrentViewType = setCurrentViewType
@@ -106,7 +109,7 @@ local function setRenderRect(l, r, b, t, scrl, scrr, scrb, scrt)
         --设置图像缩放比
         SetImageScale(1)
     else
-        error("Invalid arguement.")
+        error("Invalid argument.")
     end
 end
 lib.SetRenderRect = setRenderRect
@@ -141,23 +144,28 @@ local function screenToWorld(x, y)
 end
 lib.ScreenToWorld = screenToWorld
 
-addViewType("world", function(screen, world, offset, view3d)
-    local width = world:GetWidth() * (1 / offset.hscale)--缩放后的宽度
-    local height = world:GetHeight() * (1 / offset.vscale)--缩放后的高度
-    local dx = offset.dx * (1 / offset.hscale)--水平整体偏移
-    local dy = offset.dy * (1 / offset.vscale)--垂直整体偏移
-    --计算world最终参数
-    local l = offset.x - (width / 2) + dx
-    local r = offset.x + (width / 2) + dx
-    local b = offset.y - (height / 2) + dy
-    local t = offset.y + (height / 2) + dy
-    --应用参数
-    setRenderRect(l, r, b, t, world.scrl, world.scrr, world.scrb, world.scrt)
-end)
-addViewType("ui", function(screen, world, offset, view3d)
-    local width = screen.GetWidth()
-    local height = screen.GetHeight()
-    setRenderRect(0, width, 0, height, 0, width, 0, height)
-end)
+lstg.eventDispatcher:addListener("core.init", function()
+    addViewType("world", function(screen, world, offset, view3d)
+        local width = world:GetWidth() * (1 / offset.hscale)--缩放后的宽度
+        local height = world:GetHeight() * (1 / offset.vscale)--缩放后的高度
+        local dx = offset.dx * (1 / offset.hscale)--水平整体偏移
+        local dy = offset.dy * (1 / offset.vscale)--垂直整体偏移
+        --计算world最终参数
+        local l = offset.x - (width / 2) + dx
+        local r = offset.x + (width / 2) + dx
+        local b = offset.y - (height / 2) + dy
+        local t = offset.y + (height / 2) + dy
+        --应用参数
+        setRenderRect(l, r, b, t, world.scrl, world.scrr, world.scrb, world.scrt)
+    end)
+
+    addViewType("ui", function(screen, world, offset, view3d)
+        local width = screen.GetWidth()
+        local height = screen.GetHeight()
+        setRenderRect(0, width, 0, height, 0, width, 0, height)
+    end)
+
+    setCurrentViewType("ui")
+end, 11, "core.view.init")
 
 return lib

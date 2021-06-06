@@ -4,6 +4,8 @@ local pairs = pairs
 local select = select
 local SetBound = SetBound
 
+local i18n = require("util.Internationalization")
+
 ---@class lstg.WorldLibrary
 local lib = {}
 lstg.World = lib
@@ -289,10 +291,10 @@ function world:Set(...)
             end
             self:ApplyBound()
         else
-            error("Invalid arguement type.")
+            error(i18n:GetLanguageString("Core.World.Error.InvalidArgumentType"))
         end
     else
-        error("parameter length/number of parameters mismatch (only 17 or 6 or 1)")
+        error(i18n:GetLanguageString("Core.World.Error.MismatchParametersNumber"))
     end
 end
 

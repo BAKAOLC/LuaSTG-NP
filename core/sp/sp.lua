@@ -1,11 +1,11 @@
-sp = {}
+sp = sp or {}
 
 --SP+系 math 函数库
-DoFile 'core/sp/spmath.lua'
+lstg.DoFile "core/sp/spmath.lua"
 --SP+系 misc 函数库
-DoFile 'core/sp/spmisc.lua'
+lstg.DoFile "core/sp/spmisc.lua"
 --SP+系 string 函数库
-DoFile 'core/sp/spstring.lua'
+lstg.DoFile "core/sp/spstring.lua"
 
 local type = type
 local pairs = pairs
@@ -22,7 +22,7 @@ local min = math.min
 function sp.GetUnpackList(...)
     local ref, p = {}, { ... }
     for _, v in pairs(p) do
-        if type(v) ~= 'table' then
+        if type(v) ~= "table" then
             insert(ref, v)
         else
             local tmp = sp.GetUnpackList(unpack(v))
@@ -44,21 +44,21 @@ end
 ---@param all boolean @是否深度复制
 ---@return table
 function sp.copy(t, all)
-    local lookup = {}
-    local function _copy(t)
-        if type(t) ~= 'table' then
-            return t
-        elseif lookup[t] then
-            return lookup[t]
-        end
-        local ref = {}
-        lookup[t] = ref
-        for k, v in pairs(t) do
-            ref[_copy(k)] = _copy(v)
-        end
-        return setmetatable(ref, getmetatable(t))
-    end
     if all then
+        local lookup = {}
+        local function _copy(o)
+            if type(o) ~= "table" then
+                return o
+            elseif lookup[o] then
+                return lookup[o]
+            end
+            local ref = {}
+            lookup[o] = ref
+            for k, v in pairs(o) do
+                ref[_copy(k)] = _copy(v)
+            end
+            return setmetatable(ref, getmetatable(o))
+        end
         return _copy(t)
     else
         local ref = {}

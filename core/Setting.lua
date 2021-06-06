@@ -1,11 +1,30 @@
 local type = type
 local assert = assert
+local error = error
 local min = math.min
 local max = math.max
+local ipairs = ipairs
 local pairs = pairs
 local unpack = table.unpack or unpack
+local open = io.open
+
+local ChangeVideoMode = ChangeVideoMode
+local SetBGMVolume = SetBGMVolume
+local SetSEVolume = SetSEVolume
 
 local NULL = KEY.NULL
+
+local i18n = require("util.Internationalization")
+
+local Serialize = require("Serialize")
+local _Encode = Serialize.Json.Encode
+local _Format = Serialize.Json.Format
+---@param o table
+---@return string
+local Encode = function(o)
+    return _Format(_Encode(o))
+end
+local Decode = Serialize.Json.Decode
 
 ---@class lstg.Setting
 local lib = {}
@@ -230,10 +249,11 @@ do
     ---@param name string @键名
     ---@param key table<number, number> @键值
     local function setKey(name, key)
-        assert(gameKeys[name], ("Unregistered keys %q"):format(name))
+        assert(gameKeys[name], i18n:GetLanguageString("Core.Setting.Error.UnregisteredKey"):format(name))
         key = key and #key > 0 or { NULL }
         for _, k in ipairs(key) do
-            assert(type(k) == "number" and k >= 0, ("Illegal key value(%s) for %q"):format(k, name))
+            assert(type(k) == "number" and k >= 0,
+                    i18n:GetLanguageString("Core.Setting.Error.IllegalKeyValue"):format(k, name))
         end
         gameKeys[name].value = key
     end
@@ -242,7 +262,7 @@ do
     ---重置按键键值
     ---@param name string @键名
     local function resetKey(name)
-        assert(gameKeys[name], ("Unregistered keys %q"):format(name))
+        assert(gameKeys[name], i18n:GetLanguageString("Core.Setting.Error.UnregisteredKey"):format(name))
         gameKeys[name].value = { unpack(gameKeys[name].default) }
     end
     control.ResetKey = resetKey
@@ -282,10 +302,11 @@ do
     ---@param name string @键名
     ---@param key table<number, number> @键值
     local function setSystemKey(name, key)
-        assert(systemKeys[name], ("Unregistered system keys %q"):format(name))
+        assert(systemKeys[name], i18n:GetLanguageString("Core.Setting.Error.UnregisteredSystemKey"):format(name))
         key = key and #key > 0 or { NULL }
         for _, k in ipairs(key) do
-            assert(type(k) == "number" and k >= 0, ("Illegal system key value(%s) for %q"):format(k, name))
+            assert(type(k) == "number" and k >= 0,
+                    i18n:GetLanguageString("Core.Setting.Error.IllegalKeyValue"):format(k, name))
         end
         systemKeys[name].value = key
     end
@@ -294,7 +315,7 @@ do
     ---重置系统按键键值
     ---@param name string @键名
     local function resetSystemKey(name)
-        assert(systemKeys[name], ("Unregistered keys %q"):format(name))
+        assert(systemKeys[name], i18n:GetLanguageString("Core.Setting.Error.UnregisteredSystemKey"):format(name))
         systemKeys[name].value = { unpack(systemKeys[name].default) }
     end
     control.ResetSystemKey = resetSystemKey
@@ -420,11 +441,11 @@ lib.LoadConfiguration = loadConfiguration
 ---保存配置
 local function saveConfig()
     local f, msg
-    f, msg = io.open(targetFile, "w")
+    f, msg = open(targetFile, "w")
     if f == nil then
         error(msg)
     else
-        f:write(Serialize.Json.Format(Serialize.Json.Encode(buildConfiguration())))
+        f:write(Encode(buildConfiguration()))
         f:close()
     end
 end
@@ -433,14 +454,16 @@ lib.Save = saveConfig
 ---保存配置
 local function readConfig()
     local f, msg
-    f, msg = io.open(targetFile, "r")
+    f, msg = open(targetFile, "r")
     if f == nil then
         loadConfiguration(buildConfiguration())
     else
-        loadConfiguration(f:read("*a"))
+        loadConfiguration(Decode(f:read("*a")))
         f:close()
     end
 end
 lib.Read = readConfig
+
+lstg.eventDispatcher:addListener("core.init", readConfig, 0, "core.setting.init")
 
 return lib

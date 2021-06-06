@@ -3,7 +3,7 @@
 -- 所有功能函数暴露在全局plus表中
 -- by CHU
 
-plus = {}
+plus = plus or {}
 
 lstg.DoFile("core/plus/Utility.lua")
 lstg.DoFile("core/plus/NativeAPI.lua")

@@ -142,4 +142,6 @@ local function ResetScreen()
 end
 lib.ResetScreen = ResetScreen
 
+lstg.eventDispatcher:addListener("core.init", ResetScreen, 10, "core.screen.init")
+
 return lib

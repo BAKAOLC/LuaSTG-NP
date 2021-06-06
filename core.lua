@@ -13,33 +13,45 @@ lstg = lstg or {}
 
 local DoFile = lstg.DoFile
 
-local baseModule = {
-    "plus/plus", --plus支持库
-    "sp/sp", --sp支持库
-    "KeyCode", --按键码列表
-    "Const", --常量定义
-    "Math", --数学库
-    "Task", --协程任务库
-    "Global", --全局变量库
-    "Serialize", --序列化库
-    "Setting", --配置库
-    "Input", --输入库
-    "Screen", --屏幕渲染库
-    "World", --世界渲染库
-    "WorldOffset", --世界偏移渲染库
-    "View3d", --3d视角渲染库
-    "View", --视角渲染库
-    "Scene", --场景库
-    "Object", --对象定义库
-    "Resources", --资源加载库
-    "Text", --文本渲染库
-    --"ScoreData" --数据记录库
-}
+--额外独立支持库
+require("plus.plus") --plus支持库
+require("sp.sp") --plus支持库
+require("x.std.init") --x std支持库
+lstg.eventDispatcher = require("x.EventDispatcher").create() --事件调度器
 
-for _, target in ipairs(baseModule) do
-    require(target)
-end
+--功能性扩展库
+require("util.ArchiveFile") --储存用文件库
+require("util.StringExtend") --字符串扩展
+local i18n = require("util.Internationalization") --i18n
+lstg.eventDispatcher:addListener("core.init", function()
+    i18n:LoadFromData(require("lang.eng"))
+    i18n:LoadFromData(require("lang.chs"))
+    i18n:SetDefaultLanguage("eng")
+    i18n:SetLanguage("chs")
+end, 100, "core.i18n.init")
 
+--常态基础定义库
+require("KeyCode") --按键码列表
+require("Const") --常量定义
+require("Math") --数学库
+require("Task") --协程任务库
+require("Serialize") --序列化库
+require("Setting") --配置库
+require("Input") --输入库
+require("Screen") --屏幕渲染库
+require("World") --世界渲染库
+require("WorldOffset") --世界偏移渲染库
+require("View") --视角渲染库
+require("View3d") --3d视角渲染库
+require("Resources") --资源加载库
+require("Scene") --场景库
+require("Object") --对象定义库
+require("Text") --文本渲染库
+
+lstg.eventDispatcher:dispatchEvent("core.init")
+
+---测试场景
+DoFile("scene/title.lua")
 
 ----------------------------------------
 ---用户定义的一些函数
@@ -92,8 +104,6 @@ end
 
 ---游戏初始化
 function GameInit()
-    DoFile("scene/title.lua")
-    --Score.InitScoreData()
     if not (SceneSystem:GetNextScene()) then
         error("Entrance stage not set.")
     end

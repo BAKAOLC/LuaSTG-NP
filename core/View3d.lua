@@ -111,23 +111,24 @@ function view:SetFog(from, to, color)
     self.fog[2] = to
     self.fog[3] = color
 end
-require("View").AddViewType("3d", function(screen, world, offset, view3d)
-    local scale = screen.GetScale()
-    local dx = screen.GetDx()
-    local dy = screen.GetDy()
-    SetViewport(world.scrl * scale + dx, world.scrr * scale + dx,
-            world.scrb * scale + dy, world.scrt * scale + dy)
-    SetPerspective(
-            view3d.eye[1], view3d.eye[2], view3d.eye[3],
-            view3d.at[1], view3d.at[2], view3d.at[3],
-            view3d.up[1], view3d.up[2], view3d.up[3],
-            view3d.fovy, world:GetWidth() / world:GetHeight(),
-            view3d.z[1], view3d.z[2]
-    )
-    SetFog(view3d.fog[1], view3d.fog[2], view3d.fog[3])
-    SetImageScale(1)
-end)
 
-resetView()
+lstg.eventDispatcher:addListener("core.init", function()
+    require("View").AddViewType("3d", function(screen, world, offset, view3d)
+        local scale = screen.GetScale()
+        local dx = screen.GetDx()
+        local dy = screen.GetDy()
+        SetViewport(world.scrl * scale + dx, world.scrr * scale + dx,
+                world.scrb * scale + dy, world.scrt * scale + dy)
+        SetPerspective(
+                view3d.eye[1], view3d.eye[2], view3d.eye[3],
+                view3d.at[1], view3d.at[2], view3d.at[3],
+                view3d.up[1], view3d.up[2], view3d.up[3],
+                view3d.fovy, world:GetWidth() / world:GetHeight(),
+                view3d.z[1], view3d.z[2]
+        )
+        SetFog(view3d.fog[1], view3d.fog[2], view3d.fog[3])
+        SetImageScale(1)
+    end)
+end, 12, "core.view3d.init")
 
 return lib

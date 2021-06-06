@@ -3,6 +3,7 @@ local ipairs = ipairs
 local insert = table.insert
 local select = select
 local unpack = table.unpack or unpack
+
 local _loadTexture = lstg.LoadTexture
 local _getTextureSize = lstg.GetTextureSize
 local _loadAnimation = lstg.LoadAnimation
@@ -11,6 +12,7 @@ local _loadTTF = lstg.LoadTTF
 local _checkRes = lstg.CheckRes
 local _enumRes = lstg.EnumRes
 local attributes = lfs.attributes
+
 local int = int
 
 do

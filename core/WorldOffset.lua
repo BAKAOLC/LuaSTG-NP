@@ -2,6 +2,8 @@ local error = error
 local type = type
 local pairs = pairs
 
+local i18n = require("util.Internationalization")
+
 ---@class lstg.WorldOffsetLibrary
 local lib = {}
 lstg.WorldOffset = lib
@@ -146,10 +148,10 @@ function offset:Set(x, y, hscale, vscale, dx, dy)
                 self[k] = v
             end
         else
-            error("Invalid arguement type.")
+            error(i18n:GetLanguageString("Core.World.Error.InvalidArgumentType"))
         end
     else
-        error("parameter length/number of parameters mismatch (only 6 or 1)")
+        error(i18n:GetLanguageString("Core.World.Error.MismatchParametersNumber"))
     end
 end
 

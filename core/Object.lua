@@ -5,6 +5,8 @@
 ----------------------------------------
 ---class
 
+local i18n = require("util.Internationalization")
+
 ---@param self object @回调对象自身
 local emptyBaseFunc = function(self)
 end
@@ -59,8 +61,8 @@ function Class(...)
     if n == 0 then
         base = baseObject
     end
-    if type(base) ~= 'table' or not (base.is_class) then
-        error('Invalid base class or base class does not exist.')
+    if type(base) ~= "table" or not (base.is_class) then
+        error(i18n:GetLanguageString("Core.Object.Class.Error.InvalidBase"))
     end
     ---@type lstg.Object
     local result = { emptyBaseFunc, emptyBaseFunc, emptyBaseFunc, emptyBaseFunc, emptyColliFunc, emptyBaseFunc }
@@ -105,18 +107,18 @@ end
 
 function RawDel(o)
     if o then
-        o.status = 'del'
+        o.status = "del"
     end
 end
 
 function RawKill(o)
     if o then
-        o.status = 'kill'
+        o.status = "kill"
     end
 end
 
 function PreserveObject(o)
-    o.status = 'normal'
+    o.status = "normal"
 end
 
 ---@class object 所有游戏对象类的基类。 | Base of all game class.

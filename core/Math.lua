@@ -2,6 +2,10 @@
 ---luastg math
 ---=====================================
 
+local error = error
+
+local i18n = require("util.Internationalization")
+
 int = math.floor
 abs = math.abs
 max = math.max
@@ -33,13 +37,12 @@ function hypot(x, y)
 end
 
 local fac = {}
-
 ---阶乘，目前用于组合数和贝塞尔曲线
 ---@param num number
 ---@return number
 function Factorial(num)
     if num < 0 then
-        error("Can't get factorial of a minus number.")
+        error(i18n:GetLanguageString("Core.Math.Factorial.Error.Minus"))
     end
     if num < 2 then
         return 1
@@ -59,12 +62,13 @@ function Factorial(num)
     end
     return result
 end
+local Factorial = Factorial
 
 ---组合数，目前用于贝塞尔曲线
 ---@return number
 function CombinNum(ord, sum)
     if sum < 0 or ord < 0 then
-        error("Can't get combinatorial of minus numbers.")
+        error(i18n:GetLanguageString("Core.Math.CombinNum.Error.Minus"))
     end
     ord = int(ord)
     sum = int(sum)
