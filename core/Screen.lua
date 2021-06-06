@@ -1,10 +1,12 @@
 local min = min
+
+local Setting = require("Setting")
+
 local getResWidth = Setting.Graphics.GetResolutionWidth
 local getResHeight = Setting.Graphics.GetResolutionHeight
 
 ---@class lstg.Screen
 local lib = {}
-Screen = lib
 lstg.Screen = lib
 
 ---屏幕宽度
@@ -139,3 +141,5 @@ local function ResetScreen()
     lstg.scale_3d = scale3d
 end
 lib.ResetScreen = ResetScreen
+
+return lib

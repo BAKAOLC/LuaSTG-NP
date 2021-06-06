@@ -8,6 +8,7 @@
 ---@param self object @回调对象自身
 local emptyBaseFunc = function(self)
 end
+
 ---@param self object @回调对象自身
 ---@param other object @碰撞对象
 local emptyColliFunc = function(self, other)

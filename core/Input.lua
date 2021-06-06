@@ -1,11 +1,12 @@
-local type = type
 local GetKeyState = GetKeyState
+
+local Setting = require("Setting")
+
 local BuildKeyMap = Setting.Control.BuildKeyMap
 local BuildSystemKeyMap = Setting.Control.BuildSystemKeyMap
 
 ---@class lstg.Input
 local lib = {}
-Input = lib
 lstg.Input = lib
 
 ---@class lstg.Input.GameInput.State
@@ -105,3 +106,5 @@ local function systemKeyIsPressed(key)
     return systemKeyState[key] and not (systemKeyStatePre[key])
 end
 lib.SystemKeyIsPressed = systemKeyIsPressed
+
+return lib

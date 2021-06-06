@@ -192,3 +192,5 @@ local function pairsLoadResourcesList(name, pool)
 end
 lib.PairsLoadResourcesList = pairsLoadResourcesList
 --endregion
+
+return lib

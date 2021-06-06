@@ -1,9 +1,16 @@
+local getmetatable = getmetatable
+
 local RemoveResource = RemoveResource
 local ResetPool = ResetPool
 local ObjFrame = ObjFrame
 local BoundCheck = BoundCheck
 local CollisionCheck = CollisionCheck
 local UpdateXY = UpdateXY
+
+local World = require("World")
+local WorldOffset = require("WorldOffset")
+local View3d = require("View3d")
+local Input = require("Input")
 
 local ResetWorld = World.ResetWorld
 local ResetWorldOffset = WorldOffset.ResetWorldOffset
@@ -19,11 +26,11 @@ lstg.SceneSystem = lib
 
 ---当前场景
 ---@type lstg.Scene
-local currentScene = nil
+local currentScene
 
 ---下一个场景
 ---@type lstg.Scene
-local nextScene = nil
+local nextScene
 
 ---是否正在切换场景
 ---@type boolean
@@ -180,7 +187,7 @@ function lib:NewScene(name, is_menu, as_entrance)
 
     ---场景帧回调
     function scene:frame()
-        task.Do(self)
+        Task.Do(self)
     end
 
     ---场景后帧回调
@@ -209,7 +216,11 @@ function lib:NewScene(name, is_menu, as_entrance)
     end
 
     function scene:Set()
-        lib:SetNextScene(self)
+        lib:SetNextScene(getmetatable(self).__original or self)
+    end
+
+    function scene:Reset()
+        lib:SetNextScene(getmetatable(self).__original or self)
     end
 
     if as_entrance then

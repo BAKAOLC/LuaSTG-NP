@@ -3,6 +3,8 @@
 ---所有基础的东西都会在这里定义
 ---=====================================
 
+table.insert(package.path, "core/?.lua")
+
 ---@class lstg @内建函数库
 lstg = lstg or {}
 
@@ -24,6 +26,8 @@ local baseModule = {
     "Input", --输入库
     "Screen", --屏幕渲染库
     "World", --世界渲染库
+    "WorldOffset", --世界偏移渲染库
+    "View3d", --3d视角渲染库
     "View", --视角渲染库
     "Scene", --场景库
     "Object", --对象定义库
@@ -33,7 +37,7 @@ local baseModule = {
 }
 
 for _, target in ipairs(baseModule) do
-    DoFile(("core/%s.lua"):format(target))
+    require(target)
 end
 
 

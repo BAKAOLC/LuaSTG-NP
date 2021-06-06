@@ -722,3 +722,5 @@ function lib:Basis2MoveToEX(t, mode, ...)
     self.y = self.y + fy - last_y
     --待改善：采样方式。希望以后采样能更加精确
 end
+
+return lib

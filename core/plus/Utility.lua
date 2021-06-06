@@ -22,7 +22,7 @@ local function Class(base)
 
     local function new(t, ...)
         local instance = {}
-        setmetatable(instance, { __index = t })
+        setmetatable(instance, { __index = t, __original = t })
         classCreater(instance, t, ...)
         return instance
     end

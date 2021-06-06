@@ -9,7 +9,6 @@ local NULL = KEY.NULL
 
 ---@class lstg.Setting
 local lib = {}
-Setting = lib
 lstg.Setting = lib
 
 ---配置文件目标路径
