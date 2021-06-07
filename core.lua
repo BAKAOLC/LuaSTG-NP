@@ -47,6 +47,7 @@ require("Resources") --资源加载库
 require("Scene") --场景库
 require("Object") --对象定义库
 require("Text") --文本渲染库
+require("player.Player") --自机定义库
 
 lstg.eventDispatcher:dispatchEvent("core.init")
 

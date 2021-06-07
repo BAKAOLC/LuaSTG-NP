@@ -16,7 +16,7 @@ end
 local emptyColliFunc = function(self, other)
 end
 
----@class lstg.Object 对象基类
+---@class lstg.Object : object 对象基类
 local baseObject = {
     ---init callback
     emptyBaseFunc,
@@ -52,9 +52,9 @@ local classList = {}
 table.insert(classList, baseObject)
 
 ---定义一个lstg对象类
----@param base lstg.Object
----@param define lstg.Object
 ---@return lstg.Object
+---@overload fun(base:lstg.Object, define:lstg.Object):lstg.Object
+---@overload fun(base:lstg.Object):lstg.Object
 function Class(...)
     local n = select("#", ...)
     local base, define = ...
