@@ -11,6 +11,7 @@ local World = require("World")
 local WorldOffset = require("WorldOffset")
 local View3d = require("View3d")
 local Input = require("Input")
+local Task = require("Task")
 
 local ResetWorld = World.ResetWorld
 local ResetWorldOffset = WorldOffset.ResetWorldOffset

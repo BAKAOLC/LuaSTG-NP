@@ -16,5 +16,8 @@ return {
         ["Core.World.Error.MismatchParametersNumber"]       = "Number of parameters mismatch.",
         ["Core.View.Error.InvalidArgument"]                 = "Invalid argument.",
         ["Core.Object.Class.Error.InvalidBase"]             = "Invalid base class or base class does not exist.",
+        ["Core.Enemy.HealthSystem.Error.InvalidObject"]     = "Invalid object or object has not been registered.",
+        ["Core.Enemy.HealthSystem.Error.MinusHealth"]       = "Object health must be non negative.",
+        ["Core.Enemy.HealthSystem.Error.InvalidMaxHealth"]  = "Invalid maximum health.",
     }
 }

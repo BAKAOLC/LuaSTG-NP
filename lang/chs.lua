@@ -16,5 +16,8 @@ return {
         ["Core.World.Error.MismatchParametersNumber"]       = "参数数目不匹配。",
         ["Core.View.Error.InvalidArgument"]                 = "无效的视口类型。",
         ["Core.Object.Class.Error.InvalidBase"]             = "基类无效或基类未定义。",
+        ["Core.Enemy.HealthSystem.Error.InvalidObject"]     = "对象无效或尚未注册血量系统。",
+        ["Core.Enemy.HealthSystem.Error.MinusHealth"]       = "血量必须为非负数。",
+        ["Core.Enemy.HealthSystem.Error.InvalidMaxHealth"]  = "最大血量无效。",
     }
 }
