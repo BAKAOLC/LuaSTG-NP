@@ -22,7 +22,6 @@ Task = lib
 lstg.Task = lib
 
 local stackTarget = {}
-local stackCoroutine = {}
 
 ---@return object
 local function getSelf()
@@ -46,7 +45,6 @@ function lib:Do()
         for _, co in ipairs(self.task) do
             if status(co) ~= 'dead' then
                 insert(stackTarget, self)
-                insert(stackCoroutine, co)
                 local success, errmsg = resume(co)
                 if not (success) then
                     error(tostring(errmsg or i18n:GetLanguageString("Core.Task.Error.UnknownException"))
@@ -54,7 +52,6 @@ function lib:Do()
                             .. traceback(co)
                             .. "\n========== " .. i18n:GetLanguageString("Core.Task.CTraceback") .. " ==========")
                 end
-                remove(stackCoroutine)
                 remove(stackTarget)
             end
         end
@@ -66,7 +63,7 @@ end
 function lib:Clear(keepCurrent)
     if keepCurrent then
         local flag = false
-        local co = stackCoroutine[#stackCoroutine]
+        local co = coroutine.running()
         for i = 1, #self.task do
             if self.task[i] == co then
                 flag = true

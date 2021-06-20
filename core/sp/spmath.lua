@@ -3,7 +3,7 @@ local error = error
 local pi = math.pi
 local atan2 = math.atan2
 local deg = math.deg
-local reg = math.reg
+local rad = math.rad
 local sqrt = math.sqrt
 local max = math.max
 local min = math.min
@@ -14,12 +14,12 @@ local unpack = table.unpack or unpack
 ---角度制cos
 ---@param x number
 ---@return number
-local function cos(x) return deg(_cos(reg(x))) end
+local function cos(x) return deg(_cos(rad(x))) end
 
 ---角度制sin
 ---@param x number
 ---@return number
-local function sin(x) return deg(_sin(reg(x))) end
+local function sin(x) return deg(_sin(rad(x))) end
 
 ---获取符号
 ---@param x number

@@ -2,12 +2,12 @@ local classCreater
 classCreater = function(instance, class, ...)
     local ctor = rawget(class, "init")
     if ctor then
-        ctor(instance, ...)  -- 在有构造函数的情况下直接调用
+        return ctor(instance, ...)  -- 在有构造函数的情况下直接调用
     else
         -- 在没有构造函数的情况下去调用基类的构造函数
         local super = rawget(class, "super")
         if super then
-            classCreater(instance, super, ...)
+            return classCreater(instance, super, ...)
         end
     end
 end
@@ -23,8 +23,7 @@ local function Class(base)
     local function new(t, ...)
         local instance = {}
         setmetatable(instance, { __index = t, __original = t })
-        classCreater(instance, t, ...)
-        return instance
+        return instance, classCreater(instance, t, ...)
     end
 
     local function indexer(t, k)
@@ -127,7 +126,7 @@ local function tryCatch(data, ...)
             finally()
         end
         if not (catch) then
-            error(concat({ "unhandled error: ", result[2] }), 2)
+            error("unhandled error: " .. result[2], 2)
         elseif result[1] then
             return unpack(result, 2, num)
         else
