@@ -29,6 +29,7 @@ lstg.eventDispatcher:addListener("core.init", function()
     i18n:SetDefaultLanguage("eng")
     i18n:SetLanguage("chs")
 end, 100, "core.i18n.init")
+require("util.MathCalculation") --数学计算库
 
 --常态基础定义库
 require("KeyCode") --按键码列表

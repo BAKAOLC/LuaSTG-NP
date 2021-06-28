@@ -126,6 +126,8 @@ function task:SetFunction(f, ...)
     self.error = false
     ---错误信息
     self.exception = stringEmpty
+    ---任务执行计数器
+    self.timer = -1
     return self:Work(...)
 end
 
@@ -144,6 +146,12 @@ end
 ---@return thread
 function task:GetWorkFunc()
     return self.workFunc
+end
+
+---获取任务执行计数器数值
+---@return number
+function task:GetTimer()
+    return self.timer
 end
 
 ---尝试重置task
@@ -183,6 +191,7 @@ end
 ---执行task
 function task:Work(...)
     if self:Status() == "normal" then
+        self.timer = self.timer + 1
         local co = self:GetWorkFunc()
         local num, data = packageResult(resume(co, ...))
         if data[1] then
