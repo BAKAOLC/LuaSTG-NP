@@ -110,6 +110,85 @@ do
         return ranx:Sign()
     end
 
+    local _min = math.min
+    local _max = math.max
+    local _abs = math.abs
+    local _sign = sign
+    ---随机坐标
+    ---@param baseX number @基础X坐标
+    ---@param baseY number @基础Y坐标
+    ---@param minX number @常规X最小范围
+    ---@param maxX number @常规X最大范围
+    ---@param minY number @常规Y最小范围
+    ---@param maxY number @常规Y最大范围
+    ---@param minDx number @X最小移动范围
+    ---@param maxDx number @X最大移动范围
+    ---@param minDy number @Y最小移动范围
+    ---@param maxDy number @Y最大移动范围
+    ---@param followX number @X跟随目标
+    ---@param followY number @Y跟随目标
+    ---@param bound boolean @是否强制限制坐标边界范围
+    ---@return number, number
+    function M:Position(baseX, baseY, minX, maxX, minY, maxY, minDx, maxDx, minDy, maxDy, followX, followY, bound)
+        minX, maxX = _min(minX, maxX), _max(minX, maxX)
+        minY, maxY = _min(minY, maxY), _max(minY, maxY)
+        minDx, maxDx = _min(minDx, maxDx), _max(minDx, maxDx)
+        minDy, maxDy = _min(minDy, maxDy), _max(minDy, maxDy)
+        local dx, dy = self:Float(minDx, maxDx), self:Float(minDy, maxDy)
+        local dirX, dirY = 0, 0
+        if baseX < minX then
+            dirX = dirX + 1
+        end
+        if baseX > maxX then
+            dirX = dirX - 1
+        end
+        if baseX - dx < minX then
+            dirX = dirX + 1
+        end
+        if baseX + dx > maxX then
+            dirX = dirX - 1
+        end
+        if (followX and baseX < followX) then
+            dirX = dirX + 1
+        end
+        if (followX and baseX > followX) then
+            dirX = dirX - 1
+        end
+        if dirX == 0 then
+            dirX = self:Sign()
+        else
+            dirX = _sign(dirX)
+        end
+        if baseY < minY then
+            dirY = dirY + 1
+        end
+        if baseY > maxY then
+            dirY = dirY - 1
+        end
+        if baseY - dy < minY then
+            dirY = dirY + 1
+        end
+        if baseY + dy > maxY then
+            dirY = dirY - 1
+        end
+        if (followY and baseY < followY) then
+            dirY = dirY + 1
+        end
+        if (followY and baseY > followY) then
+            dirY = dirY - 1
+        end
+        if dirY == 0 then
+            dirY = self:Sign()
+        else
+            dirY = _sign(dirY)
+        end
+        if bound then
+            dx = _min(dx, _abs(_min(maxX, _max(minX, baseX + dirX * dx)) - baseX))
+            dy = _min(dy, _abs(_min(maxY, _max(minY, baseY + dirY * dy)) - baseY))
+        end
+        return baseX + dirX * dx, baseY + dirY * dy
+    end
+
     ---设置随机数种子
     ---@param seed number
     function M:Seed(seed)
