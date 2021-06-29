@@ -2,6 +2,7 @@ local create = coroutine.create
 local yield = coroutine.yield
 local resume = coroutine.resume
 local status = coroutine.status
+local running = coroutine.running
 local ipairs = ipairs
 local error = error
 local tostring = tostring
@@ -15,6 +16,7 @@ local sign = sign
 local CombinNum = CombinNum
 
 local i18n = require("util.Internationalization")
+local calc = require("util.MathCalculation")
 
 ---@class lstg.Task
 local lib = {}
@@ -63,7 +65,7 @@ end
 function lib:Clear(keepCurrent)
     if keepCurrent then
         local flag = false
-        local co = coroutine.running()
+        local co = running()
         for i = 1, #self.task do
             if self.task[i] == co then
                 flag = true
@@ -104,58 +106,31 @@ MOVE_DECEL = 2
 ---先加速后减速运动
 MOVE_ACC_DEC = 3
 
----跟随玩家移动
-MOVE_TOWARDS_PLAYER = 0
----X方向跟随玩家移动
-MOVE_X_TOWARDS_PLAYER = 1
----Y方向跟随玩家移动
-MOVE_Y_TOWARDS_PLAYER = 2
----随机移动
-MOVE_RANDOM = 3
-
 ---移动到指定坐标
 ---@param x number @目标x坐标
 ---@param y number @目标y坐标
 ---@param t number @移动时长
 ---@param mode number @速度变化方式
 function lib:MoveTo(x, y, t, mode)
-    t = int(t)
-    t = max(1, t)
-    local dx = x - self.x
-    local dy = y - self.y
+    t = max(1, int(t))
     local xs = self.x
     local ys = self.y
+    local dx = x - xs
+    local dy = y - ys
+    local calcFunc
     if mode == 1 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            s = s * s
-            self.x = xs + s * dx
-            self.y = ys + s * dy
-            yield()
-        end
+        calcFunc = calc.EaseInQuad
     elseif mode == 2 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            s = s * 2 - s * s
-            self.x = xs + s * dx
-            self.y = ys + s * dy
-            yield()
-        end
+        calcFunc = calc.EaseOutQuad
     elseif mode == 3 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            if s < 0.5 then
-                s = s * s * 2
-            else
-                s = -2 * s * s + 4 * s - 1
-            end
-            self.x = xs + s * dx
-            self.y = ys + s * dy
-            yield()
-        end
+        calcFunc = calc.EaseInOutQuad
     else
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            self.x = xs + s * dx
-            self.y = ys + s * dy
-            yield()
-        end
+        calcFunc = calc.Linear
+    end
+    for s in calc.Iterator(0, 1, t, false, true, calcFunc) do
+        self.x = xs + s * dx
+        self.y = ys + s * dy
+        yield()
     end
 end
 
@@ -165,93 +140,26 @@ end
 ---@param t number @移动时长
 ---@param mode number @速度变化方式
 function lib:MoveToEx(x, y, t, mode)
-    t = int(t)
-    t = max(1, t)
+    t = max(1, int(t))
     local dx = x
     local dy = y
     local slast = 0
+    local calcFunc
     if mode == 1 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            s = s * s
-            self.x = self.x + (s - slast) * dx
-            self.y = self.y + (s - slast) * dy
-            yield()
-            slast = s
-        end
+        calcFunc = calc.EaseInQuad
     elseif mode == 2 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            s = s * 2 - s * s
-            self.x = self.x + (s - slast) * dx
-            self.y = self.y + (s - slast) * dy
-            yield()
-            slast = s
-        end
+        calcFunc = calc.EaseOutQuad
     elseif mode == 3 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            if s < 0.5 then
-                s = s * s * 2
-            else
-                s = -2 * s * s + 4 * s - 1
-            end
-            self.x = self.x + (s - slast) * dx
-            self.y = self.y + (s - slast) * dy
-            yield()
-            slast = s
-        end
+        calcFunc = calc.EaseInOutQuad
     else
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            self.x = self.x + (s - slast) * dx
-            self.y = self.y + (s - slast) * dy
-            yield()
-            slast = s
-        end
+        calcFunc = calc.Linear
     end
-end
-
----根据玩家移动
----@param t number @移动时长
----@param x1 number @x左边界
----@param x2 number @x右边界
----@param y1 number @y下边界
----@param y2 number @y上边界
----@param dxmin number @x移动最小距离
----@param dxmax number @x移动最大距离
----@param dymin number @y移动最小距离
----@param dymax number @y移动最大距离
----@param mmode number @速度变化方式
----@param dmode number @跟随方式
-function lib:MoveToPlayer(t, x1, x2, y1, y2, dxmin, dxmax, dymin, dymax, mmode, dmode)
-    local dirx, diry = ran:Sign(), ran:Sign()
-    local p = player
-    if dmode < 2 then
-        if self.x > p.x then
-            dirx = -1
-        elseif self.x < p.x then
-            dirx = 1
-        end
+    for s in calc.Iterator(0, 1, t, false, true, calcFunc) do
+        s, slast = (s - slast), s
+        self.x = self.x + s * dx
+        self.y = self.y + s * dy
+        yield()
     end
-    if dmode == 0 or dmode == 2 then
-        if self.y > p.y then
-            diry = -1
-        elseif self.y < p.y then
-            diry = 1
-        end
-    end
-    local dx = ran:Float(dxmin, dxmax)
-    local dy = ran:Float(dymin, dymax)
-    if self.x + dx * dirx < x1 then
-        dirx = dirx + 1
-    end
-    if self.x + dx * dirx > x2 then
-        dirx = dirx - 1
-    end
-    if self.y + dy * diry < y1 then
-        diry = diry + 1
-    end
-    if self.y + dy * diry > y2 then
-        diry = diry - 1
-    end
-    lib.MoveTo(self, self.x + dx * sign(dirx), self.y + dy * sign(diry), t, mmode)
 end
 
 ---贝塞尔曲线
@@ -259,72 +167,35 @@ end
 ---@param mode number @速度变化方式
 function lib:BezierMoveTo(t, mode, ...)
     local arg = { ... }
-    t = int(t)
-    t = max(1, t)
-    local count = (#arg) / 2
-    local x = {}
-    local y = {}
-    x[1] = self.x
-    y[1] = self.y
+    t = max(1, int(t))
+    local count = #arg / 2
+    local x, y = { self.x }, { self.y }
     for i = 1, count do
-        x[i + 1] = arg[i * 2 - 1]
-        y[i + 1] = arg[i * 2]
+        insert(x, arg[i * 2 - 1])
+        insert(y, arg[i * 2])
     end
     local com_num = {}
     for i = 0, count do
-        com_num[i + 1] = CombinNum(i, count)
+        insert(com_num, CombinNum(i, count))
     end
+    local calcFunc
     if mode == 1 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            s = s * s
-            local _x, _y = 0, 0
-            for j = 0, count do
-                _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-                _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-            end
-            self.x = _x
-            self.y = _y
-            yield()
-        end
+        calcFunc = calc.EaseInQuad
     elseif mode == 2 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            s = s * 2 - s * s
-            local _x, _y = 0, 0
-            for j = 0, count do
-                _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-                _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-            end
-            self.x = _x
-            self.y = _y
-            yield()
-        end
+        calcFunc = calc.EaseOutQuad
     elseif mode == 3 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            if s < 0.5 then
-                s = s * s * 2
-            else
-                s = -2 * s * s + 4 * s - 1
-            end
-            local _x, _y = 0, 0
-            for j = 0, count do
-                _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-                _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-            end
-            self.x = _x
-            self.y = _y
-            yield()
-        end
+        calcFunc = calc.EaseInOutQuad
     else
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            local _x, _y = 0, 0
-            for j = 0, count do
-                _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-                _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-            end
-            self.x = _x
-            self.y = _y
-            yield()
+        calcFunc = calc.Linear
+    end
+    for s in calc.Iterator(0, 1, t, false, true, calcFunc) do
+        local _x, _y = 0, 0
+        for j = 0, count do
+            _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ j
+            _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ j
         end
+        self.x, self.y = _x, _y
+        yield()
     end
 end
 
@@ -333,82 +204,40 @@ end
 ---@param mode number @速度变化方式
 function lib:BezierMoveToEx(t, mode, ...)
     local arg = { ... }
-    t = int(t)
-    t = max(1, t)
-    local count = (#arg) / 2
-    local x = {}
-    local y = {}
+    t = max(1, int(t))
+    local count = #arg / 2
     local last_x = 0;
     local last_y = 0;
-    x[1] = 0
-    y[1] = 0
+    local x, y = { 0 }, { 0 }
+    t = int(t)
+    t = max(1, t)
     for i = 1, count do
-        x[i + 1] = arg[i * 2 - 1]
-        y[i + 1] = arg[i * 2]
+        insert(x, arg[i * 2 - 1])
+        insert(y, arg[i * 2])
     end
     local com_num = {}
     for i = 0, count do
-        com_num[i + 1] = CombinNum(i, count)
+        insert(com_num, CombinNum(i, count))
     end
+    local calcFunc
     if mode == 1 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            s = s * s
-            local _x, _y = 0, 0
-            for j = 0, count do
-                _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-                _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-            end
-            self.x = self.x + _x - last_x
-            self.y = self.y + _y - last_y
-            last_x = _x
-            last_y = _y
-            yield()
-        end
+        calcFunc = calc.EaseInQuad
     elseif mode == 2 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            s = s * 2 - s * s
-            local _x, _y = 0, 0
-            for j = 0, count do
-                _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-                _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-            end
-            self.x = self.x + _x - last_x
-            self.y = self.y + _y - last_y
-            last_x = _x
-            last_y = _y
-            yield()
-        end
+        calcFunc = calc.EaseOutQuad
     elseif mode == 3 then
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            if s < 0.5 then
-                s = s * s * 2
-            else
-                s = -2 * s * s + 4 * s - 1
-            end
-            local _x, _y = 0, 0
-            for j = 0, count do
-                _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-                _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-            end
-            self.x = self.x + _x - last_x
-            self.y = self.y + _y - last_y
-            last_x = _x
-            last_y = _y
-            yield()
-        end
+        calcFunc = calc.EaseInOutQuad
     else
-        for s = 1 / t, 1 + 0.5 / t, 1 / t do
-            local _x, _y = 0, 0
-            for j = 0, count do
-                _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-                _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ (j)
-            end
-            self.x = self.x + _x - last_x
-            self.y = self.y + _y - last_y
-            last_x = _x
-            last_y = _y
-            yield()
+        calcFunc = calc.Linear
+    end
+    for s in calc.Iterator(0, 1, t, false, true, calcFunc) do
+        local _x, _y = 0, 0
+        for j = 0, count do
+            _x = _x + x[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ j
+            _y = _y + y[j + 1] * com_num[j + 1] * (1 - s) ^ (count - j) * s ^ j
         end
+        self.x, self.y = self.x + _x - last_x, self.y + _y - last_y
+        last_x, last_y = _x, _y
+        yield()
     end
 end
 
@@ -417,21 +246,17 @@ end
 ---@param mode number @速度变化方式
 function lib:CRMoveTo(t, mode, ...)
     local arg = { ... }
-    local count = (#arg) / 2
-    local x = {}
-    local y = {}
-    x[1] = self.x
-    y[1] = self.y
+    t = max(1, int(t))
+    local count = #arg / 2
+    local x, y = { self.x }, { self.y }
     for i = 1, count do
-        x[i + 1] = arg[i * 2 - 1]
-        y[i + 1] = arg[i * 2]
+        insert(x, arg[i * 2 - 1])
+        insert(y, arg[i * 2])
     end
     insert(x, 2 * x[#x] - x[#x - 1])
     insert(x, 1, 2 * x[1] - x[2])
     insert(y, 2 * y[#y] - y[#y - 1])
     insert(y, 1, 2 * y[1] - y[2])
-    t = int(t)
-    t = max(1, t)
     local timeMark = {}
     if mode == 1 then
         for i = 1, t do
@@ -454,24 +279,23 @@ function lib:CRMoveTo(t, mode, ...)
             timeMark[i] = count * (i / t)
         end
     end
-
     for i = 1, t - 1 do
         local s = int(timeMark[i]) + 1
         local j = timeMark[i] % 1
-        local _x = x[s] * (-0.5 * j * j * j + j * j - 0.5 * j)
-                + x[s + 1] * (1.5 * j * j * j - 2.5 * j * j + 1.0)
-                + x[s + 2] * (-1.5 * j * j * j + 2.0 * j * j + 0.5 * j)
-                + x[s + 3] * (0.5 * j * j * j - 0.5 * j * j)
-        local _y = y[s] * (-0.5 * j * j * j + j * j - 0.5 * j)
-                + y[s + 1] * (1.5 * j * j * j - 2.5 * j * j + 1.0)
-                + y[s + 2] * (-1.5 * j * j * j + 2.0 * j * j + 0.5 * j)
-                + y[s + 3] * (0.5 * j * j * j - 0.5 * j * j)
+        local j2, j3 = j ^ 2, j ^ 3
+        local _x = x[s] * (-0.5 * j3 + j2 - 0.5 * j)
+                + x[s + 1] * (1.5 * j3 - 2.5 * j2 + 1.0)
+                + x[s + 2] * (-1.5 * j3 + 2.0 * j2 + 0.5 * j)
+                + x[s + 3] * (0.5 * j3 - 0.5 * j2)
+        local _y = y[s] * (-0.5 * j3 + j2 - 0.5 * j)
+                + y[s + 1] * (1.5 * j3 - 2.5 * j2 + 1.0)
+                + y[s + 2] * (-1.5 * j3 + 2.0 * j2 + 0.5 * j)
+                + y[s + 3] * (0.5 * j3 - 0.5 * j2)
         self.x = _x
         self.y = _y
         yield()
     end
-    self.x = x[count + 2]
-    self.y = y[count + 2]
+    self.x, self.y = x[count + 2], y[count + 2]
     yield()
 end
 
@@ -480,23 +304,19 @@ end
 ---@param mode number @速度变化方式
 function lib:CRMoveToEx(t, mode, ...)
     local arg = { ... }
-    local count = (#arg) / 2
-    local x = {}
-    local y = {}
+    t = max(1, int(t))
+    local count = #arg / 2
     local last_x = 0;
     local last_y = 0;
-    x[1] = 0
-    y[1] = 0
+    local x, y = { 0 }, { 0 }
     for i = 1, count do
-        x[i + 1] = arg[i * 2 - 1]
-        y[i + 1] = arg[i * 2]
+        insert(x, arg[i * 2 - 1])
+        insert(y, arg[i * 2])
     end
     insert(x, 2 * x[#x] - x[#x - 1])
     insert(x, 1, 2 * x[1] - x[2])
     insert(y, 2 * y[#y] - y[#y - 1])
     insert(y, 1, 2 * y[1] - y[2])
-    t = int(t)
-    t = max(1, t)
     local timeMark = {}
     if mode == 1 then
         for i = 1, t do
@@ -519,18 +339,18 @@ function lib:CRMoveToEx(t, mode, ...)
             timeMark[i] = count * (i / t)
         end
     end
-
     for i = 1, t - 1 do
         local s = int(timeMark[i]) + 1
         local j = timeMark[i] % 1
-        local _x = x[s] * (-0.5 * j * j * j + j * j - 0.5 * j)
-                + x[s + 1] * (1.5 * j * j * j - 2.5 * j * j + 1.0)
-                + x[s + 2] * (-1.5 * j * j * j + 2.0 * j * j + 0.5 * j)
-                + x[s + 3] * (0.5 * j * j * j - 0.5 * j * j)
-        local _y = y[s] * (-0.5 * j * j * j + j * j - 0.5 * j)
-                + y[s + 1] * (1.5 * j * j * j - 2.5 * j * j + 1.0)
-                + y[s + 2] * (-1.5 * j * j * j + 2.0 * j * j + 0.5 * j)
-                + y[s + 3] * (0.5 * j * j * j - 0.5 * j * j)
+        local j2, j3 = j ^ 2, j ^ 3
+        local _x = x[s] * (-0.5 * j3 + j2 - 0.5 * j)
+                + x[s + 1] * (1.5 * j3 - 2.5 * j2 + 1.0)
+                + x[s + 2] * (-1.5 * j3 + 2.0 * j2 + 0.5 * j)
+                + x[s + 3] * (0.5 * j3 - 0.5 * j2)
+        local _y = y[s] * (-0.5 * j3 + j2 - 0.5 * j)
+                + y[s + 1] * (1.5 * j3 - 2.5 * j2 + 1.0)
+                + y[s + 2] * (-1.5 * j3 + 2.0 * j2 + 0.5 * j)
+                + y[s + 3] * (0.5 * j3 - 0.5 * j2)
         self.x = self.x + _x - last_x
         self.y = self.y + _y - last_y
         last_x = _x
@@ -548,27 +368,22 @@ end
 function lib:Basis2MoveTo(t, mode, ...)
     local arg = { ... }
     t = max(1, int(t))
-    local count = (#arg) / 2
-    local x = {}
-    local y = {}
-    x[1] = self.x
-    y[1] = self.y
+    local count = #arg / 2
+    local x, y = { self.x }, { self.y }
     for i = 1, count do
-        x[i + 1] = arg[i * 2 - 1]
-        y[i + 1] = arg[i * 2]
+        insert(x, arg[i * 2 - 1])
+        insert(y, arg[i * 2])
     end
     --检查采样点数量，如果不足3个，则插值到3个
     if count < 2 then
         --只有两个采样点时，取中点插值
-        x[3] = x[2];
-        y[3] = y[2]
-        x[2] = x[1] + 0.5 * (x[3] - x[1])
-        y[2] = y[1] + 0.5 * (y[3] - y[1])
+        insert(x, 2, (x[1] + x[2]) / 2)
+        insert(y, 2, (y[1] + y[2]) / 2)
     elseif count < 1 then
         --只有一个采样点时，只能这样了
-        for i = 2, 3 do
-            x[i] = x[1];
-            y[i] = y[1]
+        for _ = 1, 2 do
+            insert(x, x[1])
+            insert(y, y[1])
         end
     end
     count = max(2, count)
@@ -587,31 +402,19 @@ function lib:Basis2MoveTo(t, mode, ...)
         y[count + 2] = y[count + 1]
     end
     --准备采样方式函数
-    local mfunc = {
-        [0] = function(n)
-            --线性
-            return n
-        end,
-        [1] = function(n)
-            --加速
-            return n ^ 2
-        end,
-        [2] = function(n)
-            --减速
-            return (1 - (n - 1) ^ 2)
-        end,
-        [3] = function(n)
-            --加减速
-            if n < 0.5 then
-                return 2 * (n ^ 2)
-            else
-                return (-2 * (n ^ 2) + 4 * n - 1)
-            end
-        end,
-    }
+    local calcFunc
+    if mode == 1 then
+        calcFunc = calc.EaseInQuad
+    elseif mode == 2 then
+        calcFunc = calc.EaseOutQuad
+    elseif mode == 3 then
+        calcFunc = calc.EaseInOutQuad
+    else
+        calcFunc = calc.Linear
+    end
     --开始运动
-    for i = 1 / t, 1, 1 / t do
-        local j = (count - 1) * mfunc[mode](i)--采样方式
+    for i = 1 / t, 1 + 0.5 / t, 1 / t do
+        local j = (count - 1) * calcFunc(i)--采样方式
         local se = int(j) + 1        --3采样选择
         local ct = j - int(j)        --切换
         local _x = 0
@@ -637,27 +440,22 @@ function lib:Basis2MoveToEX(t, mode, ...)
     local arg = { ... }
     t = max(1, int(t))
     local last_x, last_y = 0, 0
-    local count = (#arg) / 2
-    local x = {}
-    local y = {}
-    x[1] = 0
-    y[1] = 0
+    local count = #arg / 2
+    local x, y = { 0 }, { 0 }
     for i = 1, count do
-        x[i + 1] = arg[i * 2 - 1]
-        y[i + 1] = arg[i * 2]
+        insert(x, arg[i * 2 - 1])
+        insert(y, arg[i * 2])
     end
     --检查采样点数量，如果不足3个，则插值到3个
     if count < 2 then
         --只有两个采样点时，取中点插值
-        x[3] = x[2];
-        y[3] = y[2]
-        x[2] = x[1] + 0.5 * (x[3] - x[1])
-        y[2] = y[1] + 0.5 * (y[3] - y[1])
+        insert(x, 2, (x[1] + x[2]) / 2)
+        insert(y, 2, (y[1] + y[2]) / 2)
     elseif count < 1 then
         --只有一个采样点时，只能这样了
-        for i = 2, 3 do
-            x[i] = x[1];
-            y[i] = y[1]
+        for _ = 1, 2 do
+            insert(x, x[1])
+            insert(y, y[1])
         end
     end
     count = max(2, count)
@@ -676,31 +474,19 @@ function lib:Basis2MoveToEX(t, mode, ...)
         y[count + 2] = y[count + 1]
     end
     --准备采样方式函数
-    local mfunc = {
-        [0] = function(n)
-            --线性
-            return n
-        end,
-        [1] = function(n)
-            --加速
-            return n ^ 2
-        end,
-        [2] = function(n)
-            --减速
-            return (1 - (n - 1) ^ 2)
-        end,
-        [3] = function(n)
-            --加减速
-            if n < 0.5 then
-                return 2 * (n ^ 2)
-            else
-                return (-2 * (n ^ 2) + 4 * n - 1)
-            end
-        end,
-    }
+    local calcFunc
+    if mode == 1 then
+        calcFunc = calc.EaseInQuad
+    elseif mode == 2 then
+        calcFunc = calc.EaseOutQuad
+    elseif mode == 3 then
+        calcFunc = calc.EaseInOutQuad
+    else
+        calcFunc = calc.Linear
+    end
     --开始运动
     for i = 1 / t, 1, 1 / t do
-        local j = (count - 1) * mfunc[mode](i)--采样方式
+        local j = (count - 1) * calcFunc(i)--采样方式
         local se = int(j) + 1        --3采样选择
         local ct = j - int(j)        --切换
         local _x = 0

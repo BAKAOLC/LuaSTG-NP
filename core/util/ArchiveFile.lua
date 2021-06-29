@@ -84,7 +84,6 @@ end
 ---@overload fun(file:string):lstg.ArchiveFile
 ---@return lstg.ArchiveFile
 local lib = plus.Class()
-lstg.ArchiveFile = lib
 
 ---@param file string @目标文件路径
 function lib:init(file)

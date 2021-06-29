@@ -23,6 +23,10 @@ function sign(x)
     return x == 0 and 0 or x > 0 and 1 or -1
 end
 
+---获得数字的余
+---@param a number
+---@param b number
+---@return number
 math.mod = math.mod or math.fmod or function(a, b)
     return a >= 0 and a % abs(b) or -abs(b) + a % abs(b)
 end
@@ -70,17 +74,17 @@ function CombinNum(ord, sum)
     if sum < 0 or ord < 0 then
         error(i18n:GetLanguageString("Core.Math.CombinNum.Error.Minus"))
     end
-    ord = int(ord)
-    sum = int(sum)
+    ord, sum = int(ord), int(sum)
     return Factorial(sum) / (Factorial(ord) * Factorial(sum - ord))
 end
 
+--region 随机数
 ----------------------------------------
 ---随机数系统，用于支持replay系统
 do
     ---@class lstg.Random
-    local lib = {}
-    ran = lib
+    local M = {}
+    ran = M
 
     local ranx = Rand()
 
@@ -88,7 +92,7 @@ do
     ---@param a number
     ---@param b number
     ---@return number @a~b之间的随机整数
-    function lib:Int(a, b)
+    function M:Int(a, b)
         return a > b and ranx:Int(b, a) or ranx:Int(a, b)
     end
 
@@ -96,25 +100,26 @@ do
     ---@param a number
     ---@param b number
     ---@return number @a~b之间的随机浮点数
-    function lib:Float(a, b)
+    function M:Float(a, b)
         return ranx:Float(a, b)
     end
 
     ---随机正负
     ---@return number @随机1或-1
-    function lib:Sign()
+    function M:Sign()
         return ranx:Sign()
     end
 
     ---设置随机数种子
     ---@param seed number
-    function lib:Seed(seed)
+    function M:Seed(seed)
         return ranx:Seed(seed)
     end
 
     ---获取随机数种子
     ---@return number
-    function lib:GetSeed()
+    function M:GetSeed()
         return ranx:GetSeed()
     end
 end
+--endregion

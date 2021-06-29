@@ -22,7 +22,6 @@ local current = ""
 ---@class lstg.Internationalization : plus.Class @i18n
 ---@return lstg.Internationalization
 local lib = {}
-lstg.Internationalization = lib
 
 ---```
 ---设置默认语言
