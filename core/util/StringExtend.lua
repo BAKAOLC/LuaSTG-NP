@@ -72,7 +72,7 @@ function string:Split(delimiter)
         end
     else
         for substr in gmatch(self .. delimiter, "(.-)" .. (((tmp > 96 and tmp < 123) or (tmp > 64 and tmp < 91) or (tmp > 47 and tmp < 58)) and delimiter or "%" .. delimiter)) do
-            table.insert(list, substr)
+            insert(list, substr)
         end
     end
     return list

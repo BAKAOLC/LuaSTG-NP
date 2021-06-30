@@ -14,17 +14,23 @@ local unpack = table.unpack or unpack
 ---角度制cos
 ---@param x number
 ---@return number
-local function cos(x) return deg(_cos(rad(x))) end
+local function cos(x)
+    return _cos(rad(x))
+end
 
 ---角度制sin
 ---@param x number
 ---@return number
-local function sin(x) return deg(_sin(rad(x))) end
+local function sin(x)
+    return _sin(rad(x))
+end
 
 ---获取符号
 ---@param x number
 ---@return number
-local function sign(x) return x == 0 and 0 or x > 0 and 1 or -1 end
+local function sign(x)
+    return x == 0 and 0 or x > 0 and 1 or -1
+end
 
 ---@class sp.math
 local lib = {}

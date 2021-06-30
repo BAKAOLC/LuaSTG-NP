@@ -20,22 +20,25 @@ require("x.std.init") --x std支持库
 lstg.eventDispatcher = require("x.EventDispatcher").create() --事件调度器
 
 --功能性扩展库
-require("util.ArchiveFile") --储存用文件库
+lstg.ArchiveFile = require("util.ArchiveFile") --储存用文件库
 require("util.StringExtend") --字符串扩展
 local i18n = require("util.Internationalization") --i18n
+lstg.Internationalization = i18n
 lstg.eventDispatcher:addListener("core.init", function()
     i18n:LoadFromData(require("lang.eng"))
     i18n:LoadFromData(require("lang.chs"))
     i18n:SetDefaultLanguage("eng")
     i18n:SetLanguage("chs")
 end, 100, "core.i18n.init")
-require("util.MathCalculation") --数学计算库
+lstg.MathCalculation = require("util.MathCalculation") --数学计算库
+lstg.WalkImageSystem = require("util.WalkImageSystem") --行走图系统
 
 --常态基础定义库
 require("KeyCode") --按键码列表
 require("Const") --常量定义
 require("Math") --数学库
 require("Task") --协程任务库
+require("TaskFactory") --协程任务库
 require("Serialize") --序列化库
 require("Setting") --配置库
 require("Input") --输入库
