@@ -39,7 +39,7 @@ end
 ---@return number
 function string:UTF8Len()
     local n = 0
-    for _ in gmatch(self) do
+    for _ in gmatch(self, "[%z\1-\127\194-\244][\128-\191]*") do
         n = n + 1
     end
     return n
